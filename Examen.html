@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            padding: 0;
+            background-color: #bbf7f7;
+        }
+
+        .container {
+            max-width: 90%;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: red;
+        }
+        h2,
+        h3 {
+            color: #007BFF;
+        }
+
+        #app {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #007BFF;
+        }
+
+        input,
+        select,
+        button {
+            margin-top: 5px;
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color:rgb(11, 216, 148);
+            color:black;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            display: none;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+    <title>Hospital El Faro del Mayab</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Hospital El Faro del Mayab</h1>
+        <div id="app">
+            <div>
+                <h2>Registro de Pacientes</h2>
+                <form>
+                    <label for="name">Nombre:</label>
+                    <input type="text" id="name" placeholder="Nombre">
+
+                    <label for="age">Edad:</label>
+                    <input type="number" id="age" placeholder="Edad">
+
+                    <label for="gender">Género:</label>
+                    <select id="gender">
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                    </select>
+
+                    <label for="phone">Teléfono:</label>
+                    <input type="tel" id="phone" placeholder="Teléfono">
+
+                    <label for="diagnosis">Diagnóstico:</label>
+                    <input type="text" id="diagnosis" placeholder="Diagnóstico">
+
+                    <button type="button" onclick="addPatient()">Agregar Paciente</button>
+                </form>
+            </div>
+
+            <div>
+                <h2>Buscar Pacientes</h2>
+                <form>
+                    <label for="search">Buscar por Nombre o Diagnóstico:</label>
+                    <input type="text" id="search" placeholder="Buscar">
+                    <button type="button" onclick="searchPatients()">Buscar</button>
+                </form>
+
+                <h3>Lista de Pacientes</h3>
+                <button type="button" onclick="showPatientList()">Mostrar Lista</button>
+                <ul id="patientList"></ul>
+            </div>
+
+            <div>
+                <h2>Estadísticas</h2>
+                <p>Total de Pacientes: <span id="totalPatients">0</span></p>
+                <p>Edad Promedio: <span id="averageAge">0</span></p>
+            </div>
+        </div>
+    </div>
+    <script>
+        class Paciente {
+            constructor(nombre, edad, genero, telefono, diagnostico) {
+                this.nombre = nombre;
+                this.edad = edad;
+                this.genero = genero;
+                this.telefono = telefono;
+                this.diagnostico = diagnostico;
+            }
+        }
+
+        class RegistroPacientes {
+            constructor() {
+                this.pacientes = [];
+                this.resultadosBusqueda = [];
+            }
+
+            agregarPaciente(paciente) {
+                this.pacientes.push(paciente);
+                this.mostrarEstadisticas();
+            }
+
+            buscarPacientes(termino) {
+                this.resultadosBusqueda = [];
+                this.buscarPacientesRecursivo(this.pacientes, termino.toLowerCase());
+                this.mostrarResultados();
+            }
+
+            buscarPacientesRecursivo(pacientes, termino) {
+                pacientes.forEach(paciente => {
+                    const nombreMinusculas = paciente.nombre.toLowerCase();
+                    const diagnosticoMinusculas = paciente.diagnostico.toLowerCase();
+
+                    if (nombreMinusculas.includes(termino) || diagnosticoMinusculas.includes(termino)) {
+                        this.resultadosBusqueda.push(paciente);
+                    }
+                });
+            }
+
+            eliminarPaciente(index) {
+                this.pacientes.splice(index, 1);
+                this.mostrarListaPacientes();
+                this.mostrarEstadisticas();
+            }
+
+            eliminarPacienteFromResults(index) {
+                this.resultadosBusqueda.splice(index, 1);
+                this.mostrarResultados();
+                this.mostrarEstadisticas();
+            }
+
+            mostrarListaPacientes() {
+                const patientList = document.getElementById('patientList');
+                patientList.innerHTML = '';
+
+                this.pacientes.forEach((paciente, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `Nombre: ${paciente.nombre} 
+                                    <br>
+                                    Edad:${paciente.edad}
+                                    <br>
+                                    Género:${paciente.genero}
+                                    <br>
+                                    Teléfono:${paciente.telefono}
+                                    <br>
+                                    Diagnóstico:${paciente.diagnostico}
+                                    <button type="button" onclick="registroPacientes.eliminarPaciente(${index})">Eliminar</button>`;
+                    patientList.appendChild(li);
+                });
+            }
+
+            mostrarResultados() {
+                const patientList = document.getElementById('patientList');
+                patientList.innerHTML = '';
+
+                this.resultadosBusqueda.forEach((paciente, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `${paciente.nombre} - ${paciente.diagnostico} 
+                                    <button type="button" onclick="registroPacientes.eliminarPacienteFromResults(${index})">Eliminar</button>`;
+                    patientList.appendChild(li);
+                });
+
+                patientList.style.display = 'block';
+            }
+
+            mostrarEstadisticas() {
+                const totalPatients = document.getElementById('totalPatients');
+                const averageAge = document.getElementById('averageAge');
+
+                totalPatients.textContent = this.pacientes.length;
+
+                if (this.pacientes.length > 0) {
+                    const totalEdad = this.pacientes.reduce((sum, paciente) => sum + paciente.edad, 0);
+                    const promedioEdad = totalEdad / this.pacientes.length;
+                    averageAge.textContent = promedioEdad.toFixed(2);
+                } else {
+                    averageAge.textContent = '0';
+                }
+            }
+        }
+
+        const registroPacientes = new RegistroPacientes();
+
+        function addPatient() {
+            const name = document.getElementById('name').value;
+            const age = parseInt(document.getElementById('age').value);
+            const gender = document.getElementById('gender').value;
+            const phone = document.getElementById('phone').value;
+            const diagnosis = document.getElementById('diagnosis').value;
+
+            const paciente = new Paciente(name, age, gender, phone, diagnosis);
+            registroPacientes.agregarPaciente(paciente);
+
+            document.getElementById('name').value = '';
+            document.getElementById('age').value = '';
+            document.getElementById('gender').value = 'masculino';
+            document.getElementById('phone').value = '';
+            document.getElementById('diagnosis').value = '';
+        }
+
+        function searchPatients() {
+            const searchTerm = document.getElementById('search').value;
+            registroPacientes.buscarPacientes(searchTerm);
+        }
+
+        function showPatientList() {
+            const patientList = document.getElementById('patientList');
+            patientList.style.display = 'block';
+            registroPacientes.mostrarListaPacientes();
+        }
+    </script>
+</body>
+
+</html>
